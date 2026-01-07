@@ -1,0 +1,6 @@
+.vscode**
+.env.prod
+.env
+.env*
+!.env.example
+storages/**/.env

@@ -1,0 +1,6 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0
+WORKDIR /src/PhotosApi
+
+ENV DOTNET_USE_POLLING_FILE_WATCHER=1
+
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]

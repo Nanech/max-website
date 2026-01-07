@@ -1,0 +1,15 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0
+WORKDIR /app
+
+# Копируем файлы проектов
+COPY ["../PhotosProject.sln", "./"]
+COPY ["../src/PhotosApi/*.csproj", "src/PhotosApi/"]
+COPY ["../tests/Photos.UnitTests/*.csproj", "tests/Photos.UnitTests/"]
+
+# Восстанавливаем зависимости
+RUN dotnet restore
+
+# Копируем код
+COPY . .
+
+ENTRYPOINT ["dotnet", "test", "--logger:console"]

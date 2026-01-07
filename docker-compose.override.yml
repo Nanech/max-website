@@ -1,0 +1,12 @@
+services:
+  backend-aspnet:
+    build:
+      context: ./backend
+      dockerfile: docker/dockerfile.dev
+    environment:
+      - ASPNETCORE_URLS=http://+:8000
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ./backend/src/PhotosApi:/src/PhotosApi
+    working_dir: /src/PhotosApi
+    # working_dir: /src/PhotosApi

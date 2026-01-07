@@ -1,0 +1,31 @@
+# This file is created for PhotosProject
+
+# .NET files
+[Bb]in/
+[Oo]bj/
+*.exe
+*.dll
+*.pdb
+*.suo
+*.user
+*.userprefs
+*.log
+
+# Visual Studio files
+.vs/
+*.vssscc
+
+# Other IDE files
+.idea/
+.vscode/
+
+# Package files
+**/node_modules/
+
+# Docker files
+**/docker-compose.yml
+!/docker-compose.yml
+**/.env
+
+# Custom files for your project
+/src/PhotosApi/appsettings.Development.json
