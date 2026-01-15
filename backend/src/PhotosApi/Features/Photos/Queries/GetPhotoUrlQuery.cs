@@ -5,13 +5,13 @@ using PhotosApi.Infrastructure.Data;
 
 namespace PhotosApi.Features.Photos.Queries;
 
-public record GetPhotoUrlQuery(Guid Id) : IRequest<Guid>, IRequest<string>;
+public record GetPhotoUrlQuery(Guid Id) : IRequest<string>;
 
 public class GetPhotoUrlHandler(IStorageRepository storage, PhotosDbContext dbContext)
     : IRequestHandler<GetPhotoUrlQuery, string>
 {
     private const string BucketName = "photots-bucket";
-    private const int ExpirySeconds = 300;
+    private const int ExpirySeconds = 3600; // 1 hour
     
     public async Task<string> Handle(GetPhotoUrlQuery request, CancellationToken cancellationToken)
     {
