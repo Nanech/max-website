@@ -31,12 +31,11 @@ public class UploadPhotoHandler(
         var newPhotoId = Guid.NewGuid();
         var objectName = $"{newPhotoId}-{request.File.FileName}";
         
-        // todo: not optimized way to handle stream
-        await using var stream = request.File.OpenReadStream();
-        
         var args = new UploadFileArgs(
-            storage.DefaultPhotosBucket, objectName, 
-            stream, request.File.ContentType,
+            storage.DefaultPhotosBucket, 
+            objectName, 
+            request.File.OpenReadStream(),
+            request.File.ContentType,
             cancellationToken);        
         
         var s3FilePath = await storage.UploadFileAsync(args);

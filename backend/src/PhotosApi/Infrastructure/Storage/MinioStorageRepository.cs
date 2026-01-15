@@ -51,10 +51,12 @@ public class MinioStorageRepository(
     
     public async Task<string> UploadFileAsync(UploadFileArgs args)
     {
+        await using var stream = args.Data;
+        
         var putObjectArgs = new PutObjectArgs()
             .WithBucket(args.BucketName)
             .WithObject(args.ObjectName)
-            .WithStreamData(args.Data)
+            .WithStreamData(stream)
             .WithObjectSize(args.Data.Length)
             .WithContentType(args.ContentType);
         
