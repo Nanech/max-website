@@ -12,8 +12,13 @@
 
 ## TODO
 
-- Thumbnails original/large/image
-- Multiply loading
-- Memory leak in UploadFIleArgs
 - Validating upload images for more secure
 - transaction for uploading file
+- Path Traversal error
+- Mime type validation
+- Use transaction in Upload method
+- Controller stack leaking
+- Initialize retry policy
+- Validate capacity of file
+- Thumbnails original/large/image
+- Multiply loading
