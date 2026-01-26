@@ -31,14 +31,17 @@ builder.Services.AddMemoryCache();
 builder.Services.AddDbContext<PhotosDbContext>(options => 
     options.UseNpgsql(builder.Configuration.GetConnectionString("PhotosDatabase")));
 
+builder.Services.Configure<MinioOptions>(
+    builder.Configuration.GetSection(MinioOptions.SectionName));
+
 builder.Services.AddMinio(cfg =>
 {
-    cfg.WithEndpoint(builder.Configuration["Minio:Endpoint"])
-        .WithCredentials(
-            builder.Configuration["Minio:AccessKey"],
-            builder.Configuration["Minio:SecretKey"]);
-    if (builder.Environment.IsDevelopment())
-        cfg.WithSSL(false);
+    var opts = builder.Configuration.GetSection(MinioOptions.SectionName).Get<MinioOptions>()!;
+    
+    cfg.WithEndpoint(opts.GetInternalEndpoint())
+        .WithCredentials( opts.AccessKey, opts.SecretKey);
+
+    cfg.WithSSL(opts.UseSsl);
 });
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -53,9 +56,8 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 
 builder.Services.AddScoped<CategoryService>();
 
-builder.Services.Configure<MinioOptions>(
-    builder.Configuration.GetSection(MinioOptions.SectionName));
-builder.Services.AddSingleton<IStorageRepository, MinioStorageRepository>();
+
+builder.Services.AddTransient<IStorageRepository, MinioStorageRepository>();
 builder.Services.AddSingleton<BucketInitializerService>();
 builder.Services.AddHostedService<MinioHealthCheckService>();
 
