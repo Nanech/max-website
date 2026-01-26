@@ -1,16 +1,17 @@
+using Microsoft.Extensions.Options;
 using Minio;
 using Minio.DataModel.Args;
 using PhotosApi.Contracts;
 
 namespace PhotosApi.Infrastructure.Storage;
 
-// todo: implement cancelation tokens
 // todo: implement logging
 // todo: implement retry policy
 
 public class MinioStorageRepository(
     IMinioClient minioClient,
-    ILogger<MinioStorageRepository> logger
+    ILogger<MinioStorageRepository> logger,
+    IOptions<MinioOptions> minioOptions
     ) : IStorageRepository
 {
     public async Task<List<string>> ListBucketsAsync(CancellationToken cancellationToken)
@@ -48,7 +49,6 @@ public class MinioStorageRepository(
         }
     }
     
-    
     public async Task<string> UploadFileAsync(UploadFileArgs args)
     {
         await using var stream = args.Data;
@@ -76,6 +76,21 @@ public class MinioStorageRepository(
 
     public async Task<string> GetPresignedUrl(string bucketName, string objectName, int expirySeconds = 600)
     {
+        if (!string.IsNullOrEmpty(minioOptions.Value.PublicEndpoint))
+        {
+            var uriBuilder = new UriBuilder
+            {
+                Scheme = minioOptions.Value.UseSsl ? "https" : "http",
+                Host = minioOptions.Value.PublicEndpoint,
+                Path = $"{bucketName}/{objectName}",
+            };
+            
+            logger.LogDebug("Генерация presigned URl для объекта {ObjectName} в бакете {BucketName} с использованием " +
+                            "эндпоинта {Endpoint}", objectName, bucketName, minioOptions.Value.PublicEndpoint);
+
+            return uriBuilder.Uri.ToString();
+        }
+        
         var getObjectArgs = new PresignedGetObjectArgs()
             .WithBucket(bucketName)
             .WithObject(objectName)
