@@ -10,7 +10,7 @@ public record GetPhotoUrlQuery(Guid Id) : IRequest<string>;
 public class GetPhotoUrlHandler(IStorageRepository storage, PhotosDbContext dbContext)
     : IRequestHandler<GetPhotoUrlQuery, string>
 {
-    private const string BucketName = "photots-bucket";
+    private const string BucketName = "photos-bucket";
     private const int ExpirySeconds = 3600; // 1 hour
     
     public async Task<string> Handle(GetPhotoUrlQuery request, CancellationToken cancellationToken)
