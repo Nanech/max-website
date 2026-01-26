@@ -12,6 +12,9 @@
 
 ## TODO
 
+I need to do MVP website
+
+- Move to single bucket with prefix
 - Validating upload images for more secure
 - transaction for uploading file
 - Path Traversal error
