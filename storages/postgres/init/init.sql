@@ -1,25 +1,33 @@
 -- take extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+
+-- categories of albums
 create table if not exists categories (
     id SMALLSERIAL PRIMARY key,
     name text not null unique
 );
 
+-- albums which group photos
+create table if not exists albums (
+    id uuid primary key default uuid_generate_v4(),
+    name text not null,
+    created_at timestamp with time zone default current_timestamp,
+    shoot_year smallint not null,
+    category_id smallint references categories(id) on delete set null
+);
+
+-- main storage for photos 
 create table if not exists photos (
     id uuid primary key default uuid_generate_v4(),
-    s3_file_path text not null unique,
+    album_id uuid references albums(id) on delete cascade,
+    s3_path text not null unique,
     uploaded_at timestamp with time zone default current_timestamp,
-    shoot_year smallint not null
+    photo_status smallint not null default 0
 );
 
-create table if not exists photo_categories (
-    photo_id uuid references photos(id) on delete cascade,
-    category_id smallint references categories(id) on delete cascade,
-    primary key (photo_id, category_id)
-);
 
--- default values
+-- default values in categories
 do $$
 begin 
     if not exists (select 1 from categories) then
@@ -29,11 +37,3 @@ begin
     end if;
 end
 $$;    
-
--- create materialized view if not exists home_page_view as
---     select
---         p.s3_file_path,
---         p.uploaded_at,
---         p.shoot_year
---     from photos p
---     where p.s3_file_path;
