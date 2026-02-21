@@ -15,5 +15,6 @@ public class Category
         "Свадебная съемка" => CategoryType.WeddingPhoto,
         _ => CategoryType.None
     };
-    public ICollection<PhotoCategories> PhotosToCategory { get; set; } = [];
+
+    public ICollection<Album> Albums { get; set; } = [];
 }
