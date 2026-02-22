@@ -16,13 +16,13 @@ public class GetPhotoUrlHandler(IStorageRepository storage, PhotosDbContext dbCo
     public async Task<string> Handle(GetPhotoUrlQuery request, CancellationToken cancellationToken)
     {
         var photo = await dbContext.Photos
-            .Select(p => new { p.S3FilePath, p.PhotoId })
+            .Select(p => new { p.S3Path, p.PhotoId })
             .FirstOrDefaultAsync(p => p.PhotoId == request.Id, cancellationToken);
 
         if (photo == null)
             throw new FileNotFoundException($"Photo with ID {request.Id} not found");
 
-        var presignedUrl = await storage.GetPresignedUrl(BucketName, photo.S3FilePath, ExpirySeconds);
+        var presignedUrl = await storage.GetPresignedUrl(BucketName, photo.S3Path, ExpirySeconds);
         
         return presignedUrl;
     }

@@ -6,8 +6,7 @@ public class MinioHealthCheckService(
     ILogger<MinioHealthCheckService> logger,
     BucketInitializerService bucketInitializerService,
     IStorageRepository storage
-    )
-    : IHostedService
+    ) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {

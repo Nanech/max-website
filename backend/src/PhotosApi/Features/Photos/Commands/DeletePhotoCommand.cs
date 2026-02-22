@@ -21,6 +21,6 @@ public class DeletePhotoHandle(IStorageRepository storage, PhotosDbContext dbCon
         dbContext.Photos.Remove(photo);
         await dbContext.SaveChangesAsync(cancellationToken);
         
-        await storage.RemoveFileAsync(storage.DefaultPhotosBucket, photo.S3FilePath, cancellationToken);
+        await storage.RemoveFileAsync(storage.DefaultPhotosBucket, photo.S3Path, cancellationToken);
     }
 }
