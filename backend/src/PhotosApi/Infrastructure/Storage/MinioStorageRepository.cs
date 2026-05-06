@@ -14,6 +14,8 @@ public class MinioStorageRepository(
     IOptions<MinioOptions> minioOptions
     ) : IStorageRepository
 {
+    
+    
     public async Task<List<string>> ListBucketsAsync(CancellationToken cancellationToken)
     {
         logger.LogDebug("Получения списка бакетов из MinIO");
@@ -76,12 +78,17 @@ public class MinioStorageRepository(
 
     public async Task<string> GetPresignedUrl(string bucketName, string objectName, int expirySeconds = 600)
     {
-        if (!string.IsNullOrEmpty(minioOptions.Value.PublicEndpoint))
+        var publicEndpoint = minioOptions.Value.PublicEndpoint;
+        if (!string.IsNullOrEmpty(publicEndpoint))
         {
+            logger.LogInformation(
+                "PublicEndpoint value: '{Endpoint}', UseSSL: {UseSsl}",
+                publicEndpoint, minioOptions.Value.UseSsl);
+            
             var uriBuilder = new UriBuilder
             {
                 Scheme = minioOptions.Value.UseSsl ? "https" : "http",
-                Host = minioOptions.Value.PublicEndpoint,
+                Host = publicEndpoint,
                 Path = $"{bucketName}/{objectName}",
             };
             
@@ -98,4 +105,18 @@ public class MinioStorageRepository(
 
         return await minioClient.PresignedGetObjectAsync(getObjectArgs);
     }
+
+    public async Task SetBucketConditionalPolicyAsync(string bucketName, CancellationToken cancellationToken)
+    {
+        var policy = MinioPolicyTemplates.GetPhotoBucketPolicy(bucketName);
+        logger.LogInformation("Установка conditional policy для бакета {Bucket}", bucketName);
+        
+        var setPolicyArgs = new SetPolicyArgs()
+            .WithBucket(bucketName).WithPolicy(policy);
+        
+        await minioClient.SetPolicyAsync(setPolicyArgs, cancellationToken);
+        
+        logger.LogInformation("Conditional policy успешно применено");
+    }
+
 }

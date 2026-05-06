@@ -10,5 +10,9 @@ public interface IStorageRepository
     Task<List<string>> ListBucketsAsync(CancellationToken cancellationToken);
     Task<string> UploadFileAsync(UploadFileArgs args);
     Task RemoveFileAsync(string bucketName, string objectName, CancellationToken cancellationToken);
+    
+    
     Task<string> GetPresignedUrl(string bucketName, string objectName, int expirySeconds = 600);
+    
+    Task SetBucketConditionalPolicyAsync(string bucketName, CancellationToken cancellationToken);
 }

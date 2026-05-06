@@ -12,12 +12,13 @@ public class AlbumsController(IMediator mediator) : Controller
     [HttpGet]
     public async Task<IResult> GetAlbums(
         [FromQuery] short? categoryId,
-        CancellationToken ct
-        )
+        CancellationToken ct)
     {
         try
         {
-            var albums = await mediator.Send(new GetAlbumsQuery(categoryId), ct);
+            if (categoryId is null) return Results.NoContent();
+            
+            var albums = await mediator.Send(new GetAlbumsByCategoryIdQuery(categoryId), ct);
             return Results.Ok(albums);
         }
         catch (Exception e)
@@ -29,8 +30,7 @@ public class AlbumsController(IMediator mediator) : Controller
     [HttpPost]
     public async Task<IResult> CreateAlbum(
         [FromBody] CreateAlbumCommand command,
-        CancellationToken ct
-        )
+        CancellationToken ct)
     {
         try
         {

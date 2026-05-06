@@ -4,7 +4,7 @@ using PhotosApi.Infrastructure.Data;
 
 namespace PhotosApi.Features.Albums.Queries;
 
-public record GetAlbumsQuery(short? CategoryId = null) : IRequest<List<AlbumDto>>;
+public record GetAlbumsByCategoryIdQuery(short? CategoryId = null) : IRequest<List<AlbumDto>>;
 
 public record AlbumDto(
     Guid AlbumId,
@@ -19,9 +19,9 @@ public record AlbumDto(
 public class GetAlbumHandler(
     PhotosDbContext dbContext,
     ILogger<GetAlbumHandler> logger
-) : IRequestHandler<GetAlbumsQuery, List<AlbumDto>>
+) : IRequestHandler<GetAlbumsByCategoryIdQuery, List<AlbumDto>>
 {
-    public async Task<List<AlbumDto>> Handle(GetAlbumsQuery request, CancellationToken cancellationToken)
+    public async Task<List<AlbumDto>> Handle(GetAlbumsByCategoryIdQuery request, CancellationToken cancellationToken)
     {
         var query = dbContext.Albums.AsQueryable();
 
@@ -31,6 +31,7 @@ public class GetAlbumHandler(
         var albums = await query
             .Include(a => a.Category)
             .Include(a => a.Photos)
+            .OrderBy(a => a.CreatedAt)
             .Select(a => new AlbumDto(
                 a.AlbumId,
                 a.Name,
@@ -40,7 +41,6 @@ public class GetAlbumHandler(
                 a.Photos.Count,
                 a.CreatedAt
             ))
-            .OrderBy(a => a.CreatedAt)
             .ToListAsync(cancellationToken); ;
             
         return albums;

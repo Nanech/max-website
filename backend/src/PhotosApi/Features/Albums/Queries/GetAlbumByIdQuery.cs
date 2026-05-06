@@ -24,7 +24,7 @@ public record PhotoDto(
     DateTime UploadedAt
 );
 
-public class GetAlbumBtIdHandler(
+public class GetAlbumByIdHandler(
     PhotosDbContext dbContext,
     IStorageRepository storage
 ) : IRequestHandler<GetAlbumByIdQuery, AlbumDetailDto>
