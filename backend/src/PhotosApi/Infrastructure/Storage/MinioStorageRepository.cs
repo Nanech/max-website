@@ -119,4 +119,20 @@ public class MinioStorageRepository(
         logger.LogInformation("Conditional policy успешно применено");
     }
 
+    public async Task ChangeFilePathAsync(string bucketName, string objectName,
+        string newFilePath, CancellationToken cancellationToken)
+    {
+        var sourceObjectArgs = new CopySourceObjectArgs()
+            .WithBucket(bucketName)
+            .WithObject(objectName);
+        
+        var copyArgs = new CopyObjectArgs()
+            .WithBucket(bucketName)
+            .WithCopyObjectSource(sourceObjectArgs) 
+            .WithObject(newFilePath);
+        
+        await minioClient.CopyObjectAsync(copyArgs, cancellationToken);
+        
+        await RemoveFileAsync(bucketName, objectName, cancellationToken);
+    }
 }

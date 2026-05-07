@@ -43,4 +43,19 @@ public class PhotosController(IMediator mediator) : ControllerBase
         }
         catch (Exception e) { return Results.Problem(e.Message); }
     }
+
+    [HttpPatch("change-category")]
+    public async Task<IResult> ChangePhotoCategory([FromBody] ChangePhotoCategoryCommand request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await mediator.Send(request, cancellationToken);
+            return Results.Ok();
+        }
+        catch (Exception e)
+        {
+            return Results.Problem(e.Message);
+        }
+    }
 }
