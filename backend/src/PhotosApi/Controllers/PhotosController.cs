@@ -26,7 +26,7 @@ public class PhotosController(IMediator mediator) : ControllerBase
     {
         try
         {
-            var url = await mediator.Send(new GetPhotoUrlQuery(id), cancellationToken);
+            var url = await mediator.Send(new GetPhotoUrlByIdQuery(id), cancellationToken);
             return Results.Ok(url);
         }
         catch (FileNotFoundException) { return Results.NotFound(); }

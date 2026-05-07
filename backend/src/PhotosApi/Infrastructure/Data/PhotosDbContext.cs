@@ -12,8 +12,8 @@ public class PhotosDbContext : DbContext
     }
     
     public DbSet<Photo> Photos => Set<Photo>();
+    public DbSet<Album> Albums => Set<Album>();
     public DbSet<Category> Categories => Set<Category>();
-    public DbSet<PhotoCategories> PhotosCategories => Set<PhotoCategories>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,37 +25,49 @@ public class PhotosDbContext : DbContext
             entity.Property(e => e.Name).HasColumnName("name").IsRequired();
             entity.Ignore(e => e.CategoryType);
             entity.HasIndex(e => e.Name).IsUnique();
+            
+            entity.HasMany(c => c.Albums)
+                .WithOne(a => a.Category)
+                .HasForeignKey(a => a.CategoryId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
+        modelBuilder.Entity<Album>(entity =>
+        {
+            entity.ToTable("albums");
+            entity.HasKey(e => e.AlbumId);
+            entity.Property(e => e.AlbumId).HasColumnName("id").HasDefaultValueSql("uuid_generate_v4()");
+            
+            entity.Property(e => e.Name).HasColumnName("name").IsRequired();
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("current_timestamp");
+            entity.Property(e => e.ShootYear).HasColumnName("shoot_year");
+            
+            entity.Property(e => e.CategoryId).HasColumnName("category_id");
+            entity.HasIndex(e => e.CategoryId);
+            
+            entity.HasMany(a => a.Photos)
+                .WithOne(a => a.Album)
+                .HasForeignKey(a => a.AlbumId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
         modelBuilder.Entity<Photo>(entity =>
         {
             entity.ToTable("photos");
             entity.HasKey(e => e.PhotoId);
             entity.Property(e => e.PhotoId).HasColumnName("id").HasDefaultValueSql("uuid_generate_v4()");
-            entity.Property(e => e.S3FilePath).HasColumnName("s3_file_path");
-            entity.Property(e => e.UploadedAt).HasColumnName("uploaded_at").HasDefaultValueSql("current_timestamp");
-            entity.Property(e => e.ShootYear).HasColumnName("shoot_year");
-            entity.HasIndex(e => e.S3FilePath).IsUnique();
-        });
-
-        modelBuilder.Entity<PhotoCategories>(entity =>
-        {
-            entity.ToTable("photo_categories");
-            entity.HasKey(e => new {e.PhotoId, e.CategoryId});
-            entity.Property(e => e.PhotoId).HasColumnName("photo_id");
-            entity.Property(e => e.CategoryId).HasColumnName("category_id");
             
-            entity.HasOne(e => e.Photo)
-                .WithMany(p => p.PhotosToCategory)
-                .HasForeignKey(e => e.PhotoId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.AlbumId).HasColumnName("album_id").IsRequired();
             
-            entity.HasOne(e => e.Category)
-                .WithMany(c => c.PhotosToCategory)
-                .HasForeignKey(e => e.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.S3Path).HasColumnName("s3_path");
+            entity.Property(e => e.UploadedAt).HasColumnName("uploaded_at")
+                .HasDefaultValueSql("current_timestamp");
+            entity.Property(e => e.Status).HasColumnName("photo_status")
+                .HasDefaultValue(PhotoStatus.Draft);
+            
+            entity.HasIndex(e => e.S3Path).IsUnique();
+            entity.HasIndex(e => e.AlbumId);
         });
-
 
     }
 }

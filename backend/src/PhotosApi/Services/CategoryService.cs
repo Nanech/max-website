@@ -54,5 +54,5 @@ public class CategoryService(
         return allCategories ?? [];
     }
     
-    public void InvalidateCachce() => cache.Remove(CategoriesCacheKey);
+    public void InvalidateCache() => cache.Remove(CategoriesCacheKey);
 }

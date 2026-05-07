@@ -12,6 +12,16 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.Sources.Clear();
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", false, true)
+    .AddEnvironmentVariables();
+
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
+
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -26,21 +36,6 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddProblemDetails();
 
-builder.Services.AddMemoryCache();
-
-builder.Services.AddDbContext<PhotosDbContext>(options => 
-    options.UseNpgsql(builder.Configuration.GetConnectionString("PhotosDatabase")));
-
-builder.Services.AddMinio(cfg =>
-{
-    cfg.WithEndpoint(builder.Configuration["Minio:Endpoint"])
-        .WithCredentials(
-            builder.Configuration["Minio:AccessKey"],
-            builder.Configuration["Minio:SecretKey"]);
-    if (builder.Environment.IsDevelopment())
-        cfg.WithSSL(false);
-});
-
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
@@ -51,11 +46,30 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
-builder.Services.AddScoped<CategoryService>();
+
+builder.Services.AddMemoryCache();
+
+
+builder.Services.AddDbContext<PhotosDbContext>(options => 
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PhotosDatabase")));
 
 builder.Services.Configure<MinioOptions>(
     builder.Configuration.GetSection(MinioOptions.SectionName));
-builder.Services.AddSingleton<IStorageRepository, MinioStorageRepository>();
+
+builder.Services.AddMinio(cfg =>
+{
+    var opts = builder.Configuration.GetSection(MinioOptions.SectionName).Get<MinioOptions>()!;
+    
+    cfg.WithEndpoint(opts.GetContainerConnection)
+        .WithCredentials(opts.AccessKey, opts.SecretKey);
+
+    cfg.WithSSL(opts.UseSsl);
+});
+
+
+
+builder.Services.AddScoped<CategoryService>();
+builder.Services.AddTransient<IStorageRepository, MinioStorageRepository>();
 builder.Services.AddSingleton<BucketInitializerService>();
 builder.Services.AddHostedService<MinioHealthCheckService>();
 
@@ -64,8 +78,7 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly);
 });
 
-builder.Host.UseSerilog((context, configuration) =>
-    configuration.ReadFrom.Configuration(context.Configuration));
+
 
 builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 

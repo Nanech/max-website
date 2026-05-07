@@ -6,4 +6,4 @@ public record UploadFileArgs(
     Stream Data,
     string ContentType,
     CancellationToken CancellationToken = default
-    );
+);
