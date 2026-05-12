@@ -132,7 +132,5 @@ public class MinioStorageRepository(
             .WithObject(newFilePath);
         
         await minioClient.CopyObjectAsync(copyArgs, cancellationToken);
-        
-        await RemoveFileAsync(bucketName, objectName, cancellationToken);
     }
 }
