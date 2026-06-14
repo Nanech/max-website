@@ -12,20 +12,16 @@
 
 ## TODO
 
-В общем не до конца пока имплеметировал albums надо заняться ручками.
-
-Помимо этого не нравится логика связанная с бакетами, потестить применение политик. Обновить с photo придумать более адекватную форму
+1. Сделать логику для публичного и локального хранилища у фотографий
+2. Придумать заливку множества фотографий или что то подобное
+3. Настроить генерации ссылок у всех фотографий (возможность взять альбом и посмотреть все фото)
 
 I need to do MVP website
 
 - Move to single bucket with prefix
-- Validating upload images for more secure
-- transaction for uploading file
+- Thumbnails original/large/image
 - Path Traversal error
 - Mime type validation
-- Use transaction in Upload method
 - Controller stack leaking
 - Initialize retry policy
-- Validate capacity of file
-- Thumbnails original/large/image
 - Multiply loading

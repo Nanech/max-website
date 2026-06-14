@@ -1,13 +1,13 @@
 using System.Text.Json.Serialization;
-using MediatR;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Minio;
 using PhotosApi.Contracts;
 using PhotosApi.Infrastructure.Data;
+using PhotosApi.Infrastructure.Errors;
 using PhotosApi.Infrastructure.Storage;
 using PhotosApi.Services;
-using PhotosApi.Services.Behaviors;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +18,7 @@ builder.Configuration
     .AddJsonFile("appsettings.json", false, true)
     .AddEnvironmentVariables();
 
+// logging (Serilog)
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
@@ -29,11 +30,16 @@ builder.Services.AddControllers()
             new JsonStringEnumConverter()
         );
     });
+
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.UseInlineDefinitionsForEnums();
 });
+
+// error handling
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -46,16 +52,13 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
-
 builder.Services.AddMemoryCache();
-
 
 builder.Services.AddDbContext<PhotosDbContext>(options => 
     options.UseNpgsql(builder.Configuration.GetConnectionString("PhotosDatabase")));
 
-builder.Services.Configure<MinioOptions>(
-    builder.Configuration.GetSection(MinioOptions.SectionName));
-
+// minio
+builder.Services.Configure<MinioOptions>(builder.Configuration.GetSection(MinioOptions.SectionName));
 builder.Services.AddMinio(cfg =>
 {
     var opts = builder.Configuration.GetSection(MinioOptions.SectionName).Get<MinioOptions>()!;
@@ -66,23 +69,27 @@ builder.Services.AddMinio(cfg =>
     cfg.WithSSL(opts.UseSsl);
 });
 
-
-
+// infrastructure services
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddTransient<IStorageRepository, MinioStorageRepository>();
 builder.Services.AddSingleton<BucketInitializerService>();
 builder.Services.AddHostedService<MinioHealthCheckService>();
 
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly);
-});
+// registration cqrs services
+var assembly = typeof(Program).Assembly;
+var serviceTypes = assembly.GetTypes()
+    .Where(t => t is { IsClass: true, IsAbstract: false }
+                && (t.Name.EndsWith("QueryService") || t.Name.EndsWith("CommandService"))
+    );
+foreach (var serviceType in serviceTypes)
+    builder.Services.AddScoped(serviceType);
 
-
-
-builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+// fluent validation
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 var app = builder.Build();
+
+app.UseExceptionHandler("/error");
 
 app.UseRouting();
 
@@ -90,10 +97,6 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
-else
-{
-    app.UseExceptionHandler("/error");
 }
 
 app.UseSerilogRequestLogging();

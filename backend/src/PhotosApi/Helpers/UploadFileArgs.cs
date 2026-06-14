@@ -1,4 +1,4 @@
-namespace PhotosApi.Contracts;
+namespace PhotosApi.Helpers;
 
 public record UploadFileArgs(
     string BucketName,

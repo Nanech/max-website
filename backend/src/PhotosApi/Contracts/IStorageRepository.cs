@@ -1,3 +1,4 @@
+using PhotosApi.Helpers;
 
 namespace PhotosApi.Contracts;
 
@@ -12,6 +13,5 @@ public interface IStorageRepository
     Task RemoveFileAsync(string bucketName, string objectName, CancellationToken cancellationToken);
     Task<string> GetPresignedUrl(string bucketName, string objectName, int expirySeconds = 600);
     Task SetBucketConditionalPolicyAsync(string bucketName, CancellationToken cancellationToken);
-    
     Task ChangeFilePathAsync(string bucketName, string objectName, string newFilePath, CancellationToken cancellationToken);
 }

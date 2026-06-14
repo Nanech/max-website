@@ -2,6 +2,7 @@ using Microsoft.Extensions.Options;
 using Minio;
 using Minio.DataModel.Args;
 using PhotosApi.Contracts;
+using PhotosApi.Helpers;
 
 namespace PhotosApi.Infrastructure.Storage;
 
