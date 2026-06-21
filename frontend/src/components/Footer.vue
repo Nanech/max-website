@@ -19,9 +19,9 @@ const props = defineProps({
 <template>
   <footer class="flex-row items-center justify-between bg-black px-15 py-10 font-mono text-white">
     <div>
-      <p class="text-5xl italic">( Свет в плену <br>момента )</p>
+      <p class="text-5xl italic">( Свет в плену <br />момента )</p>
 
-      <div class="flex justify-between space-x-6 pt-20 align-top text-sm">
+      <div class="flex items-start justify-between space-x-6 pt-20 text-sm">
         <LogoComponent color="white" />
 
         <div class="flex justify-between align-top">
