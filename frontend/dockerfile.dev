@@ -1,0 +1,17 @@
+
+FROM oven/bun:1.1-alpine
+
+WORKDIR /app
+
+# // [Optional] Если в будущем понадобятся нативные зависимости
+# RUN apk add --no-cache gcompat
+
+COPY package.json bun.lockb* ./
+
+RUN bun install
+
+COPY . .
+
+EXPOSE 5173
+
+CMD ["bun", "x", "vite", "--host", "0.0.0.0"]

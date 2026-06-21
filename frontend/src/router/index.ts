@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router' // <-- Импортируем тип маршрута
 
 // Импорты страниц
 import AboutMe from '@/pages/AboutMe.vue'
@@ -7,14 +8,14 @@ import Gallery from '@/pages/Gallery.vue'
 import Home from '@/pages/Home.vue'
 import Price from '@/pages/Price.vue'
 
-// Маршруты
-const routes = [
+// Явно указываем тип : RouteRecordRaw[]
+const routes: RouteRecordRaw[] = [
   { path: '/', name: 'Home', component: Home },
   { path: '/gallery', name: 'Gallery', component: Gallery },
   { path: '/contacts', name: 'Contact', component: Contacts },
   { path: '/about_me', name: 'AboutMe', component: AboutMe },
   { path: '/price', name: 'Price', component: Price },
-  { path: '/:pathMatch(.*)*', redirect: '/' }, // на всякий случай редирект на Home
+  { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 
 const router = createRouter({
