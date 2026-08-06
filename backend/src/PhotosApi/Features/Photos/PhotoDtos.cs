@@ -1,19 +1,15 @@
 using FluentValidation;
-using PhotosApi.Helpers;
 
 namespace PhotosApi.Features.Photos;
 
 public record PhotoDto(
     Guid PhotoId,
-    string Url,
-    string Status,
     DateTime UploadedAt
 );
 
 public record UploadPhotoRequest(
     IFormFile File, 
-    Guid AlbumId,
-    PhotoStatus Status = PhotoStatus.Draft
+    Guid AlbumId
 );
 
 public class UploadPhotoDtoValidator : AbstractValidator<UploadPhotoRequest>
@@ -21,8 +17,6 @@ public class UploadPhotoDtoValidator : AbstractValidator<UploadPhotoRequest>
     public UploadPhotoDtoValidator()
     {
         RuleFor(x => x.AlbumId).NotEmpty().WithMessage("AlbumId can`t be empty");
-
-        RuleFor(x => x.Status).IsInEnum().WithMessage("Status can`t be invalid");
         
         RuleFor(x => x.File)
             .NotNull().WithMessage("File can`t be null")

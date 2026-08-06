@@ -111,22 +111,32 @@ public static class PhotoValidators
                 
                 var bytesRead = stream.Read(headerBytes, 0, maxSignatureLength);
 
-                if (bytesRead == 0)
+                if (bytesRead < 4)
                 {
                     context.AddFailure("File is corrupted or too short to verify its signature.");
                     return;
                 }
                 
                 ReadOnlySpan<byte> readSpan = headerBytes.AsSpan(0, bytesRead);
-
                 var isValidSignature = false;
 
-                foreach (var signature in signatures)
+                if (contentType == "image/webp")
                 {
-                    if (!readSpan.SequenceEqual(signature)) continue;
+                    if (readSpan.Length >= 12 &&
+                        readSpan.StartsWith("RIFF"u8) && // RIFF
+                        readSpan.Slice(8,4).SequenceEqual("WEBP"u8)
+                        )
+                        isValidSignature = true;
+                }
+                else
+                {
+                    foreach (var signature in signatures)
+                    {
+                        if (!readSpan.SequenceEqual(signature)) continue;
                     
-                    isValidSignature = true;
-                    break;
+                        isValidSignature = true;
+                        break;
+                    }
                 }
                 
                 if (!isValidSignature)

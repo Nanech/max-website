@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using PhotosApi.Helpers;
 using PhotosApi.Models;
 
 namespace PhotosApi.Infrastructure.Data;
@@ -45,6 +44,9 @@ public class PhotosDbContext : DbContext
             entity.Property(e => e.CategoryId).HasColumnName("category_id");
             entity.HasIndex(e => e.CategoryId);
             
+            entity.Property(e => e.VisibilityStatus).HasColumnName("viability_status").IsRequired()
+                .HasConversion<string>();
+            
             entity.HasMany(a => a.Photos)
                 .WithOne(a => a.Album)
                 .HasForeignKey(a => a.AlbumId)
@@ -55,17 +57,14 @@ public class PhotosDbContext : DbContext
         {
             entity.ToTable("photos");
             entity.HasKey(e => e.PhotoId);
-            entity.Property(e => e.PhotoId).HasColumnName("id").HasDefaultValueSql("uuid_generate_v4()");
+            entity.Property(e => e.PhotoId).HasColumnName("id").IsRequired()
+                .HasDefaultValueSql("uuid_generate_v4()");
             
             entity.Property(e => e.AlbumId).HasColumnName("album_id").IsRequired();
             
-            entity.Property(e => e.S3Path).HasColumnName("s3_path");
             entity.Property(e => e.UploadedAt).HasColumnName("uploaded_at")
                 .HasDefaultValueSql("current_timestamp");
-            entity.Property(e => e.Status).HasColumnName("photo_status")
-                .HasDefaultValue(PhotoStatus.Draft);
             
-            entity.HasIndex(e => e.S3Path).IsUnique();
             entity.HasIndex(e => e.AlbumId);
         });
 

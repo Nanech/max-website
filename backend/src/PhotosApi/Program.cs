@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Minio;
 using PhotosApi.Contracts;
 using PhotosApi.Infrastructure.Data;
@@ -12,7 +13,6 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.Sources.Clear();
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", false, true)
@@ -58,22 +58,45 @@ builder.Services.AddDbContext<PhotosDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PhotosDatabase")));
 
 // minio
-builder.Services.Configure<MinioOptions>(builder.Configuration.GetSection(MinioOptions.SectionName));
-builder.Services.AddMinio(cfg =>
-{
-    var opts = builder.Configuration.GetSection(MinioOptions.SectionName).Get<MinioOptions>()!;
-    
-    cfg.WithEndpoint(opts.GetContainerConnection)
-        .WithCredentials(opts.AccessKey, opts.SecretKey);
+builder.Services.Configure<MinioOptions>(builder.Configuration.GetSection("Minio"));
 
-    cfg.WithSSL(opts.UseSsl);
+// internal client for api
+builder.Services.AddKeyedSingleton<IMinioClient>("internal", (sp, key) =>
+{
+    var opts = sp.GetRequiredService<IOptions<MinioOptions>>().Value;
+    
+    return new MinioClient()
+        .WithEndpoint(opts.Endpoint, opts.Port)
+        .WithCredentials(opts.AccessKey, opts.SecretKey)
+        .WithSSL(opts.UseSsl)
+        .Build();
 });
+
+builder.Services.AddKeyedSingleton<IMinioClient>("public", (sp, key) =>
+{
+    var opts = sp.GetRequiredService<IOptions<MinioOptions>>().Value;
+    
+    return new MinioClient()
+        .WithEndpoint(opts.PublicEndpoint, 80)
+        .WithCredentials(opts.AccessKey, opts.SecretKey)
+        .WithSSL(opts.UseSsl)
+        .Build();
+});
+
+builder.Services.AddScoped<IObjectRepository>(sp => 
+    new MinioObjectRepository(
+        sp.GetRequiredKeyedService<IMinioClient>("internal"),
+        sp.GetRequiredKeyedService<IMinioClient>("public"),
+        sp.GetRequiredService<ILogger<MinioObjectRepository>>()
+    ));
 
 // infrastructure services
 builder.Services.AddScoped<CategoryService>();
-builder.Services.AddTransient<IStorageRepository, MinioStorageRepository>();
-builder.Services.AddSingleton<BucketInitializerService>();
-builder.Services.AddHostedService<MinioHealthCheckService>();
+
+builder.Services.AddHostedService<BucketInitializerService>();
+
+builder.Services.AddScoped<PhotoService>();
+builder.Services.AddSingleton<ImageSharpPhotoProcessor>();
 
 // registration cqrs services
 var assembly = typeof(Program).Assembly;

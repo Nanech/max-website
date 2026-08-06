@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using PhotosApi.Helpers;
 
 namespace PhotosApi.Features.Photos;
 
@@ -13,8 +12,8 @@ public class PhotosController(
     [HttpGet("{id:guid}/url")]
     public async Task<IActionResult> GetPhotoUrlById(Guid id, CancellationToken ct)
     {
-        var url = await queries.GetPhotoUrlByIdAsync(id, ct);
-        return Ok(new {url});
+        var photoUrls = await queries.GetPhotoUrlByIdAsync(id, ct);
+        return Ok(new {photoUrls});
     }
     
     [HttpDelete("{id:guid}")]
@@ -31,10 +30,4 @@ public class PhotosController(
         return Created($"api/photos{photoId}", new { id = photoId });
     }
 
-    [HttpPatch("{photoId:guid}/status")]
-    public async Task<IActionResult> ChangePhotoCategory(Guid photoId, PhotoStatus newStatus, CancellationToken ct)
-    {
-        await commands.ChangePhotoStatusAsync(photoId, newStatus, ct);
-        return Ok();
-    }
 }

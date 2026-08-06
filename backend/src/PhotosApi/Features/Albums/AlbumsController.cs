@@ -8,7 +8,7 @@ namespace PhotosApi.Features.Albums;
 public class AlbumsController(
     AlbumsQueryService queries,
     AlbumsCommandService commands
-    ) : Controller
+    ) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAlbumsByFiltersAsync(
@@ -40,11 +40,11 @@ public class AlbumsController(
         return Created($"api/albums/{albumId}", new { albumId });
     }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> DeleteAlbum(Guid id, CancellationToken ct)
-    {
-        await commands.DeleteAlbumByIdAsync(id, ct);
-        return NoContent();
-    }
+    // [HttpDelete("{id:guid}")]
+    // public async Task<IActionResult> DeleteAlbum(Guid id, CancellationToken ct)
+    // {
+    //     await commands.DeleteAlbumByIdAsync(id, ct);
+    //     return NoContent();
+    // }
     
 }
