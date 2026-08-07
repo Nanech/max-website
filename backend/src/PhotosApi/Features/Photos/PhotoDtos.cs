@@ -7,10 +7,25 @@ public record PhotoDto(
     DateTime UploadedAt
 );
 
+public record PhotosByAlbumRequest(Guid AlbumId);
+
+
 public record UploadPhotoRequest(
     IFormFile File, 
     Guid AlbumId
 );
+
+
+public class PhotosByAlbumValidator : AbstractValidator<PhotosByAlbumRequest>
+{
+    public  PhotosByAlbumValidator()
+    {
+        When(x => x.AlbumId != Guid.Empty, () =>
+        {
+            RuleFor(x => x.AlbumId).NotEmpty().WithMessage("AlbumId can`t be empty");
+        });
+    }
+}
 
 public class UploadPhotoDtoValidator : AbstractValidator<UploadPhotoRequest>
 {

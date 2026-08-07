@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using PhotosApi.Contracts;
 using PhotosApi.Infrastructure.Data;
 using PhotosApi.Models;
 
@@ -7,7 +6,6 @@ namespace PhotosApi.Features.Albums;
 
 public class AlbumsCommandService(
     PhotosDbContext dbContext,
-    IObjectRepository @object,
     ILogger<AlbumsCommandService> logger
 )
 {

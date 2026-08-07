@@ -18,6 +18,7 @@ public class PhotoService(
 )
 {
     private string PhotoBucket => minioOptions.Value.PhotosBucket; 
+    private PhotoUrlResolver PhotoUrlResolver => new PhotoUrlResolver(objectRepo, minioOptions);
     
     public async Task DeletePhotoObjectAsync(Guid photoId, CancellationToken ct)
     {
@@ -34,17 +35,28 @@ public class PhotoService(
         await objectRepo.RemoveManyFilesAsync(PhotoBucket, paths, ct);
     }
 
+    public async Task<List<PhotoUrlDto>> GetPhotosUrlsByAlbumAsync(Guid albumId, CancellationToken ct)
+    {
+        var album = await dbContext.Albums.Include(a => a.Photos)
+            .FirstOrDefaultAsync(a => a.AlbumId == albumId, ct);
+        
+        if (album == null)
+            throw new KeyNotFoundException($"Album with id {albumId} not found");
+
+        var photoTasks = album.Photos.Select(x => PhotoUrlResolver.GetPhotoUrlsAsync(x, ct));
+        var photoUrls = await Task.WhenAll(photoTasks);
+        return photoUrls.ToList();
+    }
+    
     public async Task<PhotoUrlDto> GetPhotoUrlAsync(Guid photoId, CancellationToken ct)
     {
-        var resolver = new PhotoUrlResolver(objectRepo, minioOptions);
-        
         var photo = await dbContext.Photos.Include(p => p.Album)
             .FirstOrDefaultAsync(p => p.PhotoId == photoId, cancellationToken: ct);
         
         if (photo == null)
             throw new KeyNotFoundException("Photo not found");
 
-        return await resolver.GetPhotoUrlsAsync(photo, ct);
+        return await PhotoUrlResolver.GetPhotoUrlsAsync(photo, ct);
     }
     
     public async Task<Guid> CreatePhotoObjectAsync(UploadPhotoRequest request, CancellationToken ct)

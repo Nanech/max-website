@@ -15,6 +15,13 @@ public class PhotosController(
         var photoUrls = await queries.GetPhotoUrlByIdAsync(id, ct);
         return Ok(new {photoUrls});
     }
+
+    [HttpGet("/albumId/{albumId:guid}")]
+    public async Task<IActionResult> GetPhotosByAlbumAsync(Guid albumId, CancellationToken ct)
+    {
+        var photosUrls = await queries.GetPhotosUrlsByAlbumAsync(albumId, ct);
+        return Ok(new {photosUrls});
+    }
     
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeletePhotoById(Guid id, CancellationToken ct)

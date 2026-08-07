@@ -13,7 +13,7 @@ public class PhotoUrlResolver(
     IOptions<MinioOptions> minioOptions
 )
 {
-    private string PhotosBucket { get; init; } = minioOptions.Value.PhotosBucket;
+    private string PhotosBucket { get; } = minioOptions.Value.PhotosBucket;
     private const int PrivateUrlExpirationSeconds = 900; // 15 minutes
     private string BaseUrlCdn => minioOptions.Value.PublicEndpoint;
     
