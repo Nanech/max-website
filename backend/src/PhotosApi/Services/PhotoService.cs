@@ -95,26 +95,21 @@ public class PhotoService(
 
     private async Task UploadFileToObjectStorageAsync(ProcessedPhotoGroup photos, CancellationToken ct)
     {
-        foreach (var version in photos.GetAllVersions())
+        var uploadTasks = photos.GetAllVersions()
+            .Select(version => UploadWithRetryASync(version, ct));
+        
+        try
         {
-            await UploadWithRetryASync(version, ct);
+            await Task.WhenAll(uploadTasks);
+            logger.LogInformation("All photo versions uploaded successfully");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to upload one or more photo versions");
+            throw;
         }
         
         logger.LogInformation("Photos successfully uploaded");
-        
-        // var uploadTasks = photos.GetAllVersions()
-        //     .Select(version => UploadWithRetryASync(version, ct));
-        //
-        // try
-        // {
-        //     await Task.WhenAll(uploadTasks);
-        //     logger.LogInformation("All photo versions uploaded successfully");
-        // }
-        // catch (Exception ex)
-        // {
-        //     logger.LogError(ex, "Failed to upload one or more photo versions");
-        //     throw;
-        // }
     }
     
     private async Task UploadWithRetryASync(ProcessedPhotoVersion version, CancellationToken ct, int maxAttempts = 3)
