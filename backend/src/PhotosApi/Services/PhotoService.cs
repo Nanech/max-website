@@ -59,7 +59,7 @@ public class PhotoService(
         return await PhotoUrlResolver.GetPhotoUrlsAsync(photo, ct);
     }
     
-    public async Task<Guid> CreatePhotoObjectAsync(UploadPhotoRequest request, CancellationToken ct)
+    public async Task<List<Guid>> CreatePhotoObjectAsync(UploadPhotoRequest request, CancellationToken ct)
     {
         var album = await dbContext.Albums.
             Include(a => a.Category)
@@ -68,23 +68,30 @@ public class PhotoService(
         if (album == null)
             throw new KeyNotFoundException($"Album with id {request.AlbumId} not found");
 
-        var photoId = Guid.NewGuid();
-        
-        try
+        var uploadTasks = request.Files.Select(async file =>
         {
-            var photosPaths = await ProcessPhotoAsync(photoId, request.File);
-            await UploadFileToObjectStorageAsync(photosPaths, ct);
+            var photoId = Guid.NewGuid();
 
-            await SavePhotoToDbAsync(album, photoId, ct);
+            try
+            {
+                var photosPaths = await ProcessPhotoAsync(photoId, file);
+                
+                await UploadFileToObjectStorageAsync(photosPaths, ct);
+                
+                await SavePhotoToDbAsync(album, photoId, ct);
+                
+                logger.LogInformation("Photo {PhotoId} created successfully", photoId);
+                return photoId;
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Failed to process photo {PhotoId} in batch upload", photoId);
+                throw;
+            }
+        });
         
-            logger.LogInformation("Photo {PhotoId} created successfully", photoId);
-            return photoId;
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Failed to create photo {PhotoId}", photoId);
-            throw;
-        }
+        var createdIds = await Task.WhenAll(uploadTasks);
+        return createdIds.ToList();
     }
 
     private async Task<ProcessedPhotoGroup> ProcessPhotoAsync(Guid photoId, IFormFile file)

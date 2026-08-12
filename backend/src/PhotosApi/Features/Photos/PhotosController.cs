@@ -9,29 +9,29 @@ public class PhotosController(
     PhotosQueryService queries
 ) : ControllerBase
 {
-    [HttpGet("{id:guid}/url")]
-    public async Task<IActionResult> GetPhotoUrlById(Guid id, CancellationToken ct)
+    [HttpGet("{id:guid}/urls")]
+    public async Task<IActionResult> GetUrls(Guid id, CancellationToken ct)
     {
-        var photoUrls = await queries.GetPhotoUrlByIdAsync(id, ct);
-        return Ok(new {photoUrls});
+        var urls = await queries.GetPhotoUrlByIdAsync(id, ct);
+        return Ok(urls);
     }
 
-    [HttpGet("/albumId/{albumId:guid}")]
-    public async Task<IActionResult> GetPhotosByAlbumAsync(Guid albumId, CancellationToken ct)
+    [HttpGet("/album/{albumId:guid}")]
+    public async Task<IActionResult> GetByAlbum(Guid albumId, CancellationToken ct)
     {
         var photosUrls = await queries.GetPhotosUrlsByAlbumAsync(albumId, ct);
         return Ok(new {photosUrls});
     }
     
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> DeletePhotoById(Guid id, CancellationToken ct)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         await commands.DeletePhotoByIdAsync(id, ct);
         return NoContent();
     }
     
     [HttpPost("upload")]
-    public async Task<IActionResult> UploadPhoto([FromForm] UploadPhotoRequest request, CancellationToken ct)
+    public async Task<IActionResult> Upload([FromForm] UploadPhotoRequest request, CancellationToken ct)
     {
         var photoId = await commands.UploadPhotoAsync(request, ct);
         return Created($"api/photos{photoId}", new { id = photoId });
