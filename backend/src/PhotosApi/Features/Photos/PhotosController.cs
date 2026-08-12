@@ -23,10 +23,10 @@ public class PhotosController(
         return Ok(new {photosUrls});
     }
     
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    [HttpDelete("{photoIds:guid}")]
+    public async Task<IActionResult> Delete(List<Guid> photoIds, CancellationToken ct)
     {
-        await commands.DeletePhotoByIdAsync(id, ct);
+        await commands.DeletePhotoByIdAsync(photoIds, ct);
         return NoContent();
     }
     

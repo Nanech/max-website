@@ -18,21 +18,32 @@ public class PhotoService(
 )
 {
     private string PhotoBucket => minioOptions.Value.PhotosBucket; 
-    private PhotoUrlResolver PhotoUrlResolver => new PhotoUrlResolver(objectRepo, minioOptions);
+    private PhotoUrlResolver PhotoUrlResolver => new(objectRepo, minioOptions);
     
-    public async Task DeletePhotoObjectAsync(Guid photoId, CancellationToken ct)
+    public async Task DeletePhotosAsync(IEnumerable<Guid> photoIds, CancellationToken ct)
     {
-        var photo = await dbContext.Photos
-            .FirstOrDefaultAsync(p => p.PhotoId == photoId, ct);
-        
-        if (photo == null)
-            throw new FileNotFoundException($"Photo with id {photoId} not found");
-        
-        dbContext.Photos.Remove(photo);
+        var idsList = photoIds.ToList();
+        if (!idsList.Any()) return;
+
+        var photos = await dbContext.Photos.Where(p => idsList.Contains(p.PhotoId)).ToListAsync(ct);
+        if (!photos.Any()) return;
+
+        dbContext.Photos.RemoveRange(photos);
         await dbContext.SaveChangesAsync(ct);
 
-        var paths = PhotoObjectFactory.GetAllVersionsPaths(photoId);
-        await objectRepo.RemoveManyFilesAsync(PhotoBucket, paths, ct);
+        var allPaths = photos.SelectMany(p => PhotoObjectFactory.GetAllVersionsPaths(p.PhotoId))
+            .ToList();
+
+        try
+        {
+            await objectRepo.RemoveManyFilesAsync(PhotoBucket, allPaths, ct);
+            logger.LogInformation("Deleted {Count} photos and files", photos.Count);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to delete {Count} photos and files", photos.Count);
+            throw;
+        }
     }
 
     public async Task<List<PhotoUrlDto>> GetPhotosUrlsByAlbumAsync(Guid albumId, CancellationToken ct)
@@ -197,6 +208,4 @@ public class PhotoService(
         
     } 
     
-    
-
 }

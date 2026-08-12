@@ -4,8 +4,8 @@ namespace PhotosApi.Features.Photos;
 
 public class PhotosCommandService(PhotoService service)
 {
-    public async Task DeletePhotoByIdAsync(Guid photoId, CancellationToken ct) =>
-        await service.DeletePhotoObjectAsync(photoId, ct); 
+    public async Task DeletePhotoByIdAsync(List<Guid> photoIds, CancellationToken ct) =>
+        await service.DeletePhotosAsync(photoIds, ct); 
     
     public async Task<List<Guid>> UploadPhotoAsync(UploadPhotoRequest request, CancellationToken ct) => 
         await service.CreatePhotoObjectAsync(request, ct);
