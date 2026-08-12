@@ -67,7 +67,7 @@ public class PhotoService(
         
         if (album == null)
             throw new KeyNotFoundException($"Album with id {request.AlbumId} not found");
-
+       
         var uploadTasks = request.Files.Select(async file =>
         {
             var photoId = Guid.NewGuid();
@@ -77,8 +77,6 @@ public class PhotoService(
                 var photosPaths = await ProcessPhotoAsync(photoId, file);
                 
                 await UploadFileToObjectStorageAsync(photosPaths, ct);
-                
-                await SavePhotoToDbAsync(album, photoId, ct);
                 
                 logger.LogInformation("Photo {PhotoId} created successfully", photoId);
                 return photoId;
@@ -91,6 +89,8 @@ public class PhotoService(
         });
         
         var createdIds = await Task.WhenAll(uploadTasks);
+        await SavePhotoToDbAsync(album, createdIds, ct);
+        
         return createdIds.ToList();
     }
 
@@ -165,42 +165,36 @@ public class PhotoService(
             lastException);
     }
 
-    private async Task SavePhotoToDbAsync(Album album, Guid photoId, CancellationToken ct)
+    private async Task SavePhotoToDbAsync(Album album, IEnumerable<Guid> photoIds, CancellationToken ct)
     {
         await using var tran = await dbContext.Database.BeginTransactionAsync(ct);
 
+        var photos = photoIds.Select(photoId => new Photo
+        {
+            PhotoId = photoId,
+            AlbumId = album.AlbumId,
+            Album = album,
+            UploadedAt = DateTime.UtcNow
+        }).ToList();
+
         try
         {
-            var photo = new Photo
-            {
-                PhotoId = photoId,
-                AlbumId = album.AlbumId,
-                Album = album,
-                UploadedAt = DateTime.UtcNow
-            };
-
-            await dbContext.Photos.AddAsync(photo, ct);
+            await dbContext.Photos.AddRangeAsync(photos, ct);
             await dbContext.SaveChangesAsync(ct);
             await tran.CommitAsync(ct);
-            
-            logger.LogDebug("Photo successfully saved in Db");
+            logger.LogDebug("Photos successfully saved in Db");
         }
         catch (Exception e)
         {
-            logger.LogError(
-                e,
-                "Error while saving Photo in Db. Rollback tran. PhotoId: {PhotoId}",
-                photoId
-            );
-            
             await tran.RollbackAsync(ct);
-            await DeletePhotoObjectAsync(photoId, ct);
+            // todo: delete photos from storage  
             
             throw new InvalidOperationException(
                 $"Error while saving photo in Db. File deleted from storage: {e.Message}",
                 e
             );
         }
+        
     } 
     
     

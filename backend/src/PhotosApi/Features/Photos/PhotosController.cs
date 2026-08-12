@@ -33,8 +33,13 @@ public class PhotosController(
     [HttpPost("upload")]
     public async Task<IActionResult> Upload([FromForm] UploadPhotoRequest request, CancellationToken ct)
     {
-        var photoId = await commands.UploadPhotoAsync(request, ct);
-        return Created($"api/photos{photoId}", new { id = photoId });
+        var photoIds = await commands.UploadPhotoAsync(request, ct);
+
+        return CreatedAtAction(
+            nameof(GetByAlbum),
+            new { albumId = request.AlbumId },
+            new { ods = photoIds }
+        );
     }
 
 }

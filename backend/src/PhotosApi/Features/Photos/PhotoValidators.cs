@@ -14,32 +14,6 @@ public static class PhotoValidators
     private static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
     private static readonly string[] AllowedMimeTypes = ["image/jpeg", "image/png", "image/webp"];
     
-    // todo: must to realize it asap
-    private static readonly Dictionary<string, byte[][]> FileSignatures = new()
-    {
-        {
-            "image/jpeg",
-            [
-                [0xFF, 0xD8, 0xFF, 0xE0], // JPEG JFIF
-                [0xFF, 0xD8, 0xFF, 0xE1], // JPEG Exif
-                [0xFF, 0xD8, 0xFF, 0xE2], // JPEG
-                [0xFF, 0xD8, 0xFF, 0xE3]  // JPEG
-            ]
-        },
-        {
-            "image/png",
-            [
-                [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A] // PNG
-            ]
-        },
-        {
-            "image/webp",
-            [
-                [0x52, 0x49, 0x46, 0x46] // RIFF (WebP начинается с "RIFF")
-            ]
-        }
-    };
-
     public static IRuleBuilderOptionsConditions<T, IFormFile> ValidPhotoFile<T>(this IRuleBuilder<T, IFormFile> ruleBuilder)
     {
         return ruleBuilder.Custom((file, context) =>
@@ -88,7 +62,6 @@ public static class PhotoValidators
             }
                 
             var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-
             if (string.IsNullOrEmpty(fileExtension) || !AllowedExtensions.Contains(fileExtension))
             {
                 context.AddFailure($"Unsupported file extension: {fileExtension}, allowed: {string.Join( ", ", AllowedExtensions)}");
@@ -101,48 +74,41 @@ public static class PhotoValidators
                 context.AddFailure($"Unsupported file type: {contentType}. Allowed: {string.Join(", ", AllowedMimeTypes)}");
                 return;
             }
-                
-            if (FileSignatures.TryGetValue(contentType, out var signatures))
+            
+            using var stream = file.OpenReadStream();
+            Span<byte> headerBytes = stackalloc byte[12];
+            var bytesRead = stream.Read(headerBytes);
+
+            if (bytesRead < 4) // for jpeg/png/webp min 4 bytes 
             {
-                using var stream = file.OpenReadStream();
-                // Нам нужно прочитать максимум 8 байт (для PNG)
-                var maxSignatureLength = signatures.Max(s => s.Length);
-                var headerBytes = new byte[maxSignatureLength];
-                
-                var bytesRead = stream.Read(headerBytes, 0, maxSignatureLength);
-
-                if (bytesRead < 4)
-                {
-                    context.AddFailure("File is corrupted or too short to verify its signature.");
-                    return;
-                }
-                
-                ReadOnlySpan<byte> readSpan = headerBytes.AsSpan(0, bytesRead);
-                var isValidSignature = false;
-
-                if (contentType == "image/webp")
-                {
-                    if (readSpan.Length >= 12 &&
-                        readSpan.StartsWith("RIFF"u8) && // RIFF
-                        readSpan.Slice(8,4).SequenceEqual("WEBP"u8)
-                        )
-                        isValidSignature = true;
-                }
-                else
-                {
-                    foreach (var signature in signatures)
-                    {
-                        if (!readSpan.SequenceEqual(signature)) continue;
-                    
-                        isValidSignature = true;
-                        break;
-                    }
-                }
-                
-                if (!isValidSignature)
-                    context.AddFailure("File content does not match its extension (invalid file signature).");
+                context.AddFailure($"Unexpected end of file: {file}");
+                return;
             }
             
+            var readSpan = headerBytes[..bytesRead];
+            var isValidSignature = false;
+
+            if (contentType is "image/jpeg" or "image/jpg")
+            {
+                isValidSignature = readSpan.StartsWith((ReadOnlySpan<byte>)[0xFF, 0xD8]);
+            }
+            else if (contentType == "image/png")
+            {
+                // Стандартная 8-байтная сигнатура PNG
+                isValidSignature = readSpan.StartsWith((ReadOnlySpan<byte>)[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+            }
+            else if (contentType == "image/webp")
+            {
+                // Теперь буфер точно 12 байт, проверяем "RIFF" в начале и "WEBP" на 8-й позиции
+                isValidSignature = readSpan.Length >= 12 
+                                   && readSpan.StartsWith("RIFF"u8) 
+                                   && readSpan[8..12].SequenceEqual("WEBP"u8);
+            }
+
+            if (!isValidSignature)
+            {
+                context.AddFailure("File content does not match its extension (invalid file signature).");
+            }
         });
     }
     

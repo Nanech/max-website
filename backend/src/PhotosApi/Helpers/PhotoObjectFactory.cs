@@ -10,9 +10,9 @@ public static class PhotoObjectFactory
     private const string LargePrefix = "large";
     private const string PreviewPrefix = "preview";
 
-    public static string BuildOriginalPath(Guid photoId) => Path.Combine(photoId.ToString(), $"{OriginalPrefix}.webp");
-    public static string BuildLargePath(Guid photoId) => Path.Combine(photoId.ToString(), $"{LargePrefix}.webp");
-    public static string BuildPreviewPath(Guid photoId) => Path.Combine(photoId.ToString(), $"{PreviewPrefix}.webp");
+    public static string BuildOriginalPath(Guid photoId) => $"{photoId}/{OriginalPrefix}.webp";
+    public static string BuildLargePath(Guid photoId) => $"{photoId}/{LargePrefix}.webp";
+    public static string BuildPreviewPath(Guid photoId) => $"{photoId}/{PreviewPrefix}.webp";
 
     public static string[] GetAllVersionsPaths(Guid photoId) =>
     [

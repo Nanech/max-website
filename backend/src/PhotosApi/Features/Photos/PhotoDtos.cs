@@ -33,17 +33,9 @@ public class UploadPhotoDtoValidator : AbstractValidator<UploadPhotoRequest>
             .Must(x => x is { Count: > 0 } ).WithMessage("At lest one file must be supplied");
 
         RuleForEach(x => x.Files)
-            .ChildRules(file =>
-            {
-                RuleForEach(x => x.Files)
-                    .ChildRules(file =>
-                    {
-                        file.RuleFor(f => f)
-                            .NotNull().WithMessage("File can`t be null")
-                            .Must(x => x.Length > 0).WithMessage("File must be supplied")
-                            .ValidPhotoFile();
-                    });
-            });
+            .NotNull().WithMessage("File can`t be null")
+            .Must(file => file.Length > 0).WithMessage("At lest one file must be supplied")
+            .ValidPhotoFile();
     }
 }
 
