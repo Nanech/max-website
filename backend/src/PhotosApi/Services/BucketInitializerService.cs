@@ -1,11 +1,11 @@
-  using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using PhotosApi.Contracts;
 using PhotosApi.Infrastructure.Storage;
 
 namespace PhotosApi.Services;
 
 public class BucketInitializerService(
-    IStorageRepository storageRepository,
+    IServiceProvider serviceProvider,
     IOptions<MinioOptions> minioOptions,
     ILogger<BucketInitializerService> logger
 ) : IHostedService
@@ -15,41 +15,25 @@ public class BucketInitializerService(
     public async Task InitializeBucketsAsync(CancellationToken cancellationToken)
     {
         logger.LogInformation("Проверка существования необходимых бакетов");
-        var buckets = minioOptions.Value?.Buckets.ToList() ?? new List<string>();
-        if (!buckets.Contains(storageRepository.DefaultPhotosBucket))
-        {
-            buckets.Add(storageRepository.DefaultPhotosBucket);
-        }        
+
+        using var scope = serviceProvider.CreateScope();
+        var objectRepository = scope.ServiceProvider.GetRequiredService<IObjectRepository>();
+        
+        var buckets = new HashSet<string> { minioOptions.Value.PhotosBucket };
+        logger.LogInformation("Бакеты которые поступили: {buckets}, {photosBuckets}" , buckets, minioOptions.Value.PhotosBucket);
         
         var bucketExists = 
-            buckets.Select(b => storageRepository.CheckBucketExistsAsync(b, cancellationToken))
+            buckets.Select(b => objectRepository.CheckBucketExistsAsync(b, cancellationToken))
             .ToArray();
         await Task.WhenAll(bucketExists);
-
+        
         if (bucketExists.Any(t => !t.Result))
         {
             logger.LogWarning("Некоторые бакеты отсутствуют. Инициализация...");
             var tasks =
-                buckets.Select(b => storageRepository.CreateBucketIfNotExistsAsync(b, cancellationToken))
+                buckets.Select(b => objectRepository.CreateBucketIfNotExistsAsync(b, cancellationToken))
                 .ToArray();
             await Task.WhenAll(tasks);
-        }
-        
-        logger.LogInformation("Применение политик для photos-bucket");
-
-        try
-        {
-            await storageRepository.SetBucketConditionalPolicyAsync(
-                storageRepository.DefaultPhotosBucket,
-                cancellationToken
-            );
-            
-            logger.LogInformation("Conditional policy успешно применены");
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Ошибка при применении conditional policy");
-            throw;
         }
         
         logger.LogInformation("Бакеты инициализированы");

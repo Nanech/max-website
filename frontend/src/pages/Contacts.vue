@@ -1,15 +1,11 @@
-<script setup>
-
-
+<script setup lang="ts">
+import CreditsSection from '@/components/CreditsSection.vue'
 </script>
 
 <template>
-  <div class="font-mono px-15 uppercase">
-    <h1 class="text-9xl text-justify ">Контакты /</h1>
-    
-    <div class="pt-10">
+  <div class="mt-15 px-15 font-mono uppercase">
+    <h1 class="text-justify text-9xl">Контакты /</h1>
 
-    </div>
-
+    <CreditsSection />
   </div>
 </template>

@@ -5,7 +5,7 @@ namespace PhotosApi.Services;
 public class MinioHealthCheckService(
     ILogger<MinioHealthCheckService> logger,
     BucketInitializerService bucketInitializerService,
-    IStorageRepository storage
+    IObjectRepository @object
     ) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -18,7 +18,7 @@ public class MinioHealthCheckService(
             try
             {
                 logger.LogInformation("MinIo health check attempt {Attempt}/{MaxRetries}", attempt, maxRetries);
-                var buckets = await storage.ListBucketsAsync(cancellationToken);
+                var buckets = await @object.ListBucketsAsync(cancellationToken);
                 logger.LogInformation("MinIo is healthy and reachable.");
                 
                 if (buckets.Count > 0)

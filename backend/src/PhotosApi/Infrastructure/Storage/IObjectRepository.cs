@@ -1,18 +1,16 @@
+using PhotosApi.Helpers;
+using PhotosApi.Infrastructure.Storage;
 
 namespace PhotosApi.Contracts;
 
-public interface IStorageRepository
+public interface IObjectRepository
 {
-    public string DefaultPhotosBucket => "photos-bucket";
     Task<bool> CheckBucketExistsAsync(string bucketName, CancellationToken cancellationToken);
     Task CreateBucketAsync(string bucketName, CancellationToken cancellationToken);
     Task CreateBucketIfNotExistsAsync(string bucketName, CancellationToken cancellationToken);
     Task<List<string>> ListBucketsAsync(CancellationToken cancellationToken);
     Task<string> UploadFileAsync(UploadFileArgs args);
-    Task RemoveFileAsync(string bucketName, string objectName, CancellationToken cancellationToken);
-    
-    
-    Task<string> GetPresignedUrl(string bucketName, string objectName, int expirySeconds = 600);
-    
-    Task SetBucketConditionalPolicyAsync(string bucketName, CancellationToken cancellationToken);
+    Task RemoveFileAsync(string bucketName, string objectName, CancellationToken ct);
+    Task RemoveManyFilesAsync(string bucketName, IEnumerable<string> objectsKeys, CancellationToken ct);
+    Task<string> GetPresignedUrlAsync(string bucketName, string objectName, int expirySeconds = 600);
 }

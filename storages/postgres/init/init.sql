@@ -14,16 +14,15 @@ create table if not exists albums (
     name text not null,
     created_at timestamp with time zone default current_timestamp,
     shoot_year smallint not null,
-    category_id smallint references categories(id) on delete set null
+    category_id smallint references categories(id) on delete set null,
+    viability_status text not null default 'private'
 );
 
 -- main storage for photos 
 create table if not exists photos (
     id uuid primary key default uuid_generate_v4(),
     album_id uuid not null references albums(id) on delete cascade,
-    s3_path text not null unique,
-    uploaded_at timestamp with time zone default current_timestamp,
-    photo_status smallint not null default 0
+    uploaded_at timestamp with time zone default current_timestamp
 );
 
 
