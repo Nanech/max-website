@@ -135,6 +135,16 @@ services:
       - "traefik.http.routers.backend.rule=Host(`api.localhost`)"
       - "traefik.http.routers.backend.entrypoints=web"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      
+    # 1. Подключаем CORS middleware
+      - "traefik.http.routers.backend.middlewares=backend-cors@docker"
+      
+      # 2. Правильные параметры Traefik v3 для CORS
+      - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.backend-cors.headers.accesscontrolalloworiginlistregex=^http://.*"
+      - "traefik.http.middlewares.backend-cors.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.backend-cors.headers.addvaryheader=true"
     networks:
       - internal
 

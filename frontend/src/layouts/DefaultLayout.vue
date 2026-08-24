@@ -5,7 +5,6 @@ import Footer from '@/components/Footer.vue'
 const links = [
   { to: '/gallery', label: '/ Портфолио' },
   { to: '/price', label: '/ Прайс' },
-  { to: '/about_me', label: '/ Обо мне' },
   { to: '/contacts', label: '/ Контакты' },
 ]
 
