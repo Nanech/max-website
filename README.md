@@ -6,6 +6,6 @@
 
 ## Про стек
 
-- **Frontend**: Vue, JS, Tailwind CSS
+- **Frontend**: Vue, TS, Tailwind CSS
 - **Backend**: ASP.NET Core, C#
 - **Хранение данных**: PostgreSQL (мета-информация) + Minio (для хранения изображений) + Redis (для кэша)
