@@ -37,7 +37,7 @@ const isDark = computed(() => Boolean(route.meta.isDark))
         :label="'Написать в телеграмм'"
         type="external"
         url="https://t.me/withmax22"
-        isDark="true"
+        :isDark="true"
       >
         <ArrowIcon />
       </CommonButton>

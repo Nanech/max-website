@@ -28,7 +28,8 @@ const formatPrice = (val: number) => new Intl.NumberFormat('ru-RU').format(val)
     <!-- Описание -->
     <div class="space-y-2 font-mono text-xs tracking-tight text-gray-700 uppercase">
       <p>
-        Длительность: <span class="text-bold font-bold">{{ priceCard.duration }} час(а)</span>
+        Длительность:
+        <span class="text-bold font-bold">{{ priceCard.durationInHours }} час(а)</span>
       </p>
       <p>
         Фотографий в ретуши:
