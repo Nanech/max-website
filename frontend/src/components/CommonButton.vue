@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -69,7 +69,7 @@ const getComponentProps = computed(() => {
 
 <template>
   <component :is="getComponent" :class="computedClasses" v-bind="getComponentProps">
-    <div class="flex items-center justify-between gap-2 h-4">
+    <div class="flex h-4 items-center justify-between gap-2">
       <span>{{ label }}</span>
       <slot></slot>
     </div>

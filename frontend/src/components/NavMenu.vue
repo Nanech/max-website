@@ -1,5 +1,5 @@
-<script setup>
-import { computed, ref } from 'vue'
+<script setup lang="ts">
+import { computed } from 'vue'
 import { useNavMenu } from '@/composables/useNavMenu'
 
 const props = defineProps({

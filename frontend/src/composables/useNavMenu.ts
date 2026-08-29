@@ -1,12 +1,12 @@
 import { ref } from 'vue'
 
 export interface NavItem {
-  to: string;
-  [key: string]: any;
+  to: string
+  [key: string]: unknown
 }
 
 export interface ProcessedNavItem extends NavItem {
-  external: boolean;
+  external: boolean
 }
 
 export function useNavMenu(navItems: NavItem[]) {
