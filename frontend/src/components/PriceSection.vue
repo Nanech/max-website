@@ -12,7 +12,7 @@ defineProps<{
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <!-- Заголовок -->
       <div class="mb-12 flex items-center justify-between">
-        <h2 class="font-mono text-6xl font-bold tracking-wider uppercase md:text-4xl">Прайс /</h2>
+        <h2 class="font-mono text-6xl font-bold tracking-wider uppercase md:text-7xl">Прайс /</h2>
       </div>
 
       <div>

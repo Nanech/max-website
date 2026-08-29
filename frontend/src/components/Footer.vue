@@ -17,7 +17,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <footer class="w-full bg-black px-4 py-12 text-white md:py-16">
+  <footer class="w-full bg-black px-4 py-5 text-white md:px-20 md:py-5">
     <div class="mx-auto flex flex-col gap-20 lg:justify-between">
       <p class="text-5xl italic md:text-6xl lg:text-7xl">
         ( Свет в плену <br class="hidden sm:inline" />момента )

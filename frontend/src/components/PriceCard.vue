@@ -44,7 +44,7 @@ const formatPrice = (val: number) => new Intl.NumberFormat('ru-RU').format(val)
     <!-- Цена -->
     <div class="mt-8 pt-6">
       <div class="flex items-baseline justify-between font-mono">
-        <span class="text-3xl font-black font-bold uppercase">Стоимость:</span>
+        <span class="text-3xl font-bold uppercase">Стоимость:</span>
         <span class="text-2xl font-bold">{{ formatPrice(priceCard.price) }} ₽</span>
       </div>
     </div>

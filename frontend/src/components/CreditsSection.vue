@@ -40,9 +40,13 @@ const team = ref<TeamMember[]>([
 </script>
 
 <template>
-  <div class="bg-white px-6 py-16 md:px-15">
-    <div class="mx-auto grid max-w-7xl grid-cols-1 items-start gap-12 md:grid-cols-3 md:gap-6">
-      <MemberCard v-for="member in team" :key="member.id" :member="member" />
+  <section class="max-auto w-full px-4 py-16 md:px-20">
+    <h1 class="text-justify text-6xl uppercase md:text-9xl">Контакты /</h1>
+
+    <div class="bg-white py-16">
+      <div class="mx-auto grid max-w-7xl grid-cols-1 items-start gap-12 md:grid-cols-3 md:gap-6">
+        <MemberCard v-for="member in team" :key="member.id" :member="member" />
+      </div>
     </div>
-  </div>
+  </section>
 </template>
