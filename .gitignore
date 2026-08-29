@@ -4,3 +4,4 @@
 .env*
 !.env.example
 storages/**/.env
+node_modules
