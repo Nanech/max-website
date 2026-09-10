@@ -38,7 +38,7 @@ public class CreateAlbumDtoValidator : AbstractValidator<CreateAlbumCommand>
     {
         RuleFor(c => c.Name)
             .NotEmpty().WithMessage("Album name cannot be empty")
-            .Length(3, 255).WithMessage("Album name must  be between 3 and 255 characters");
+            .Length(3, 255).WithMessage("Album name must be between 3 and 255 characters");
         
         RuleFor(c => c.CategoryId)
             .InclusiveBetween((short)1, (short)4)
