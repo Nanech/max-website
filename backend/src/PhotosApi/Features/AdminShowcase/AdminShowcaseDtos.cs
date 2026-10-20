@@ -55,3 +55,17 @@ public class CreateShowcaseItemValidator : AbstractValidator<CreateShowcaseItemC
         return hasAlbum ^ hasPhoto; 
     }
 }
+
+public record CreateShowcasePageCommand(
+    string Name,
+    string PageKey
+);
+
+public class CreateShowcasePageValidator : AbstractValidator<CreateShowcasePageCommand>
+{
+    public CreateShowcasePageValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty().WithMessage("Name cannot be empty");
+        RuleFor(x => x.PageKey).NotEmpty().WithMessage("PageKey cannot be empty");
+    }
+} 

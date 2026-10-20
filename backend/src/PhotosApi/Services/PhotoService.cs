@@ -23,10 +23,10 @@ public class PhotoService(
     public async Task DeletePhotosAsync(IEnumerable<Guid> photoIds, CancellationToken ct)
     {
         var idsList = photoIds.ToList();
-        if (!idsList.Any()) return;
+        if (idsList.Count == 0) return;
 
         var photos = await dbContext.Photos.Where(p => idsList.Contains(p.PhotoId)).ToListAsync(ct);
-        if (!photos.Any()) return;
+        if (photos.Count == 0) return;
 
         dbContext.Photos.RemoveRange(photos);
         await dbContext.SaveChangesAsync(ct);
@@ -69,6 +69,17 @@ public class PhotoService(
 
         return await PhotoUrlResolver.GetPhotoUrlsAsync(photo, ct);
     }
+
+    public async Task<IEnumerable<PhotoUrlDto>> GetPhotosByIdsAsync(IEnumerable<Guid> photoIds, CancellationToken ct)
+    {
+        var photoList = await dbContext.Photos.Where(p => photoIds.Contains(p.PhotoId)).ToListAsync(ct);
+        
+        // todo: may parallelism problem, when ids is too many 
+        var urlTasks = photoList.Select(photo => PhotoUrlResolver.GetPhotoUrlsAsync(photo, ct));
+        var urls = await Task.WhenAll(urlTasks);
+
+        return urls;
+    }
     
     public async Task<List<Guid>> CreatePhotoObjectAsync(UploadPhotoRequest request, CancellationToken ct)
     {
@@ -102,7 +113,7 @@ public class PhotoService(
         var createdIds = await Task.WhenAll(uploadTasks);
         await SavePhotoToDbAsync(album, createdIds, ct);
         
-        return createdIds.ToList();
+        return [.. createdIds];
     }
 
     private async Task<ProcessedPhotoGroup> ProcessPhotoAsync(Guid photoId, IFormFile file)

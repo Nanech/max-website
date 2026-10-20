@@ -5,9 +5,9 @@ using PhotosApi.Models;
 
 namespace PhotosApi.Features.AdminShowcase;
 
-public class AdminCommandService(
+public class AdminShowcaseCommandService(
     PhotosDbContext dbContext,
-    ILogger<AdminCommandService> logger
+    ILogger<AdminShowcaseCommandService> logger
     )
 {
 
@@ -89,6 +89,23 @@ public class AdminCommandService(
         
         return showcaseSection.Id;
     }
-    
-    
+
+    public async Task<int> CreateShowcasePage(CreateShowcasePageCommand request, CancellationToken ct)
+    {
+        logger.LogInformation("Создание page: {Request}", request);
+        
+        var pageExistence = await dbContext.ShowcasePages.AnyAsync(sp => sp.PageKey == request.PageKey, ct);
+        if (pageExistence)
+            throw new ArgumentException($"Page with key {request.PageKey} already exists");
+
+        var page = new ShowcasePage
+        {
+            Name = request.Name,
+            PageKey =  request.PageKey
+        };
+
+        await dbContext.AddAsync(page, ct);
+        await dbContext.SaveChangesAsync(ct);
+        return page.Id;
+    }
 }

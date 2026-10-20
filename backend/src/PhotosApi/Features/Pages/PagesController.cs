@@ -4,19 +4,14 @@ namespace PhotosApi.Features.Pages;
 
 [ApiController]
 [Route("api/pages")]
-public class PagesController : ControllerBase
+public class PagesController(
+    PagesQueryService queryService
+    ) : ControllerBase
 {
-    
-    // [HttpGet]
-    // public async Task<IActionResult> GetHomePage()
-    // {
-    //     return Ok();
-    // }
-    
-    
-    // [HttpGet]
-    
-    
-    
-    
+    [HttpGet("{pageKey}")]
+    public async Task<IActionResult> GetPageLayout(string pageKey, CancellationToken ct)
+    {
+        var page = await queryService.GetPageLayout(pageKey, ct);
+        return Ok(page);
+    }
 }
