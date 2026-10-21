@@ -11,7 +11,14 @@ public record AlbumDto(
     string? CategoryName,
     short ShootYear,
     int PhotosCount,
-    DateTime CreatedAt
+    DateTime CreatedAt, 
+    Guid? CoverPhoto 
+);
+
+public record AlbumCardDto(
+     Guid AlbumId,
+     string Name,
+     Guid? CoverPhoto
 );
 
 public record AlbumDetailDto(

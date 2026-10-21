@@ -7,9 +7,6 @@ public class AlbumsQueryService(
     PhotosDbContext dbContext
 )
 {
-    // public async Task<AlbumDto> GetAlbumFiltersAsync()
-    
-    
     public async Task<List<AlbumDto>> GetAlbumsWithFiltersAsync(GetAlbumsQuery filters, CancellationToken ct)
     {
         var query = dbContext.Albums.AsQueryable();
@@ -34,10 +31,29 @@ public class AlbumsQueryService(
                 a.Category != null ? a.Category.Name : null,
                 a.ShootYear,
                 a.Photos.Count,
-                a.CreatedAt
+                a.CreatedAt,
+                a.CoverPhotoId
             ))
             .ToListAsync(ct);
         return albums;
     }
+
+    public async Task<IEnumerable<AlbumCardDto>> GetAlbumsByIdsAsync(IEnumerable<Guid> albumIds, CancellationToken ct)
+    {
+        var enumerable = albumIds as Guid[] ?? [.. albumIds];
+        if (enumerable.Length == 0) return [];
+
+        var albums = await dbContext.Albums
+            .Where(a => enumerable.Contains(a.AlbumId))
+            .OrderBy(a => a.CreatedAt)
+            .Select(a => new AlbumCardDto(
+                a.AlbumId,
+                a.Name,
+                a.CoverPhotoId
+            )).ToArrayAsync(ct);
+        
+        return albums;
+    }
+    
     
 }

@@ -45,7 +45,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./storages/postgres/init:/docker-entrypoint-initdb.d
+      - ./storages/postgres/init:/docker-entrypoint-initdb.d      
     ports:
       - "5432:5432"
     expose:

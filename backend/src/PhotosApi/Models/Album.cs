@@ -16,4 +16,6 @@ public class Album
     
     public ICollection<Photo> Photos { get; set; } = [];
     
+    public Guid? CoverPhotoId { get; set; }
+    public  Photo? CoverPhoto { get; set; }
 }

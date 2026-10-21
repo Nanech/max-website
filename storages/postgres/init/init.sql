@@ -14,7 +14,7 @@ create table if not exists albums (
     created_at timestamp with time zone default current_timestamp,
     shoot_year smallint not null,
     category_id smallint references categories(id) on delete set null,
-    viability_status text not null default 'private'
+    viability_status text not null default 'private'    
 );
 
 -- main storage for photos 
@@ -23,6 +23,9 @@ create table if not exists photos (
     album_id uuid not null references albums(id) on delete cascade,
     uploaded_at timestamp with time zone default current_timestamp
 );
+
+alter table albums add column if not exists cover_photo_id uuid references photos(id) on delete set null;
+
 
 create table if not exists showcase_pages (
     id serial primary key,

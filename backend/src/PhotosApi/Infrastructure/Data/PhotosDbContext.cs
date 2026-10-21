@@ -53,6 +53,13 @@ public class PhotosDbContext : DbContext
             entity.Property(e => e.VisibilityStatus).HasColumnName("viability_status").IsRequired()
                 .HasConversion<string>();
             
+            entity.Property(e => e.CoverPhotoId).HasColumnName("cover_photo_id");
+            
+            entity.HasOne(a => a.CoverPhoto)
+                .WithMany()
+                .HasForeignKey(a => a.CoverPhotoId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
             entity.HasMany(a => a.Photos)
                 .WithOne(a => a.Album)
                 .HasForeignKey(a => a.AlbumId)
