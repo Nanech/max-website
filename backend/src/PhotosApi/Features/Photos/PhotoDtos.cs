@@ -14,6 +14,8 @@ public record UploadPhotoRequest(
     Guid AlbumId
 );
 
+public record PhotoUrlDto(string OriginalUrl, string LargeUrl, string PreviewUrl);
+
 public class PhotosByAlbumValidator : AbstractValidator<PhotosByAlbumRequest>
 {
     public  PhotosByAlbumValidator()

@@ -19,4 +19,6 @@ public class ShowcaseItem
     public Photo? Photo { get; set; }
     
     public DateTime CreatedAt { get; set; }
+    
+    public int DisplayOrder { get; set; }
 }

@@ -50,7 +50,7 @@ public class PhotosDbContext : DbContext
             entity.Property(e => e.CategoryId).HasColumnName("category_id");
             entity.HasIndex(e => e.CategoryId);
             
-            entity.Property(e => e.VisibilityStatus).HasColumnName("viability_status").IsRequired()
+            entity.Property(e => e.VisibilityStatus).HasColumnName("visibility_status").IsRequired()
                 .HasConversion<string>();
             
             entity.Property(e => e.CoverPhotoId).HasColumnName("cover_photo_id");
@@ -143,7 +143,8 @@ public class PhotosDbContext : DbContext
             entity.Property(e => e.PhotoId).HasColumnName("photo_id");
             entity.Property(e => e.AlbumId).HasColumnName("album_id");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("current_timestamp");
-
+            entity.Property(e => e.DisplayOrder).HasColumnName("display_order");
+            
             entity.HasOne(e => e.Section)
                 .WithMany(s => s.Items)
                 .HasForeignKey(e => e.SectionId)

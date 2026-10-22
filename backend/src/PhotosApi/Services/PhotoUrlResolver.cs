@@ -1,12 +1,11 @@
 using Microsoft.Extensions.Options;
 using PhotosApi.Contracts;
+using PhotosApi.Features.Photos;
 using PhotosApi.Helpers;
 using PhotosApi.Infrastructure.Storage;
 using PhotosApi.Models;
 
 namespace PhotosApi.Services;
-
-public record PhotoUrlDto(string OriginalUrl, string LargeUrl, string PreviewUrl);
 
 public class PhotoUrlResolver(
     IObjectRepository objectRepository,

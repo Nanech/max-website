@@ -20,9 +20,10 @@ public abstract record ShowcaseItemDto(
 );
 
 public sealed record AlbumShowcaseItemDto(
-    AlbumDto Album
+    AlbumCardDto AlbumCard,
+    PhotoUrlDto? CoverPhoto
 ) : ShowcaseItemDto("album");
 
 public sealed record PhotoShowcaseItemDto(
-    PhotoDto Photo
+    PhotoUrlDto Photo
 ) : ShowcaseItemDto("photo");
